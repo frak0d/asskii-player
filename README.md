@@ -1,8 +1,8 @@
 # asskii-player
 
-Ascii Video Player that runs in any modern Console.
+Ascii Video Player that runs in any modern Console. [W.I.P]
 
-##Working Idea :-
+## Working Idea :-
 1. Extract video frames using ffmpeg.
 2. Display the frames as ascii art on console.
 3. Playback control using keyboard.
