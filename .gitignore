@@ -1,5 +1,6 @@
 .vs/
 .git/
+.cache/
 build/
 testing/
 .vscode/

@@ -63,11 +63,12 @@ void delete_frames(const string& folderpath, const uint32_t start_num, const uin
 
 int main(int argc, const char* argv[])
 {
-	string ff = "ffmpeg.exe";
+	string ff = "ffmpeg";
 	string fl = "test.3gp";
 
 	auto self_path = fs::path(argv[0]);
-	cout << self_path;
+	cout << self_path << endl;
+	
 	//save_frames(ff, fl, 20, 50);
 	return 0;
 }
