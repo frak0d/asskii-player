@@ -13,6 +13,42 @@ namespace fs = std::filesystem;
 int WIDTH;
 int HEIGHT;
 
+#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
+std::string QuoteShellArgUnix(const std::string &$arg){
+    std::string ret="'";
+    ret.reserve($arg.length()+10); // ¯\_(ツ)_/¯ should avoid realloc in most cases
+    for(size_t i=0;i<$arg.length();++i){
+        if($arg[i]=='\00'){
+            throw std::runtime_error("argument contains null bytes, it is impossible to escape null bytes on unix!");
+        } else if($arg[i]=='\'') {
+            ret+="'\\''";
+        } else {
+            ret += $arg[i];
+        }
+    }
+    ret+="'";
+    return ret;
+}
+#endif
+#if defined(_WIN32) || defined(_WIN64)
+std::string QuoteShellArgWindows(const std::string &$arg){
+	// todo make a proper quote function 
+	// which is non-trivial, the Windows escape rules are *complex* and even differ between system()/.bat invocations and manual cmd invocations
+	// maybe try porting https://stackoverflow.com/a/29215357/1067003
+	return std::string("\"")+$arg+std::string("\"");
+}
+#endif
+std::string QuoteShellArg(const std::string &$arg){
+	#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
+	return QuoteShellArgUnix($arg);
+	#endif
+	
+	#if defined(_WIN32) || defined(_WIN64)
+	return QuoteShellArgWindows($arg);
+	#endif
+}
+
+
 void ClearScreen()
 {
 	#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
@@ -27,29 +63,29 @@ void ClearScreen()
 void DeleteFile(const string& filename)
 {
 	#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-		system(format("rm \"{}\"", filename).c_str());
+		system(format("rm {}", QuoteShellArg(filename)).c_str());
 	#endif
 
 	#if defined(_WIN32) || defined(_WIN64)
-		system(format("del \"{}\"", filename).c_str());
+		system(format("del {}", QuoteShellArg(filename)).c_str());
 	#endif
 }
 
 void DeleteFolder(const string& foldername)
 {
 	#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-		system(format("rm -r \"{}\"", foldername).c_str());
+		system(format("rm -r {}", QuoteShellArg(foldername)).c_str());
 	#endif
 
 	#if defined(_WIN32) || defined(_WIN64)
-		system(format("rmdir \"{}\"", foldername).c_str());
+		system(format("rmdir {}", QuoteShellArg(foldername)).c_str());
 	#endif
 }
 
 void save_frames(const string& ffpath, const string& filepath, const uint32_t start_num, const uint32_t end_num)
 {
 	string command = format("{0} -i {1} -vf select='between(n,{2},{3})' -vsync 0 -start_number {2} frame-%03d.png",
-							ffpath, filepath, start_num, end_num);
+							QuoteShellArg(ffpath), QuoteShellArg(filepath), start_num, end_num);
 	system(command.c_str());
 }
 
