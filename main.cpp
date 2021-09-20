@@ -15,41 +15,32 @@ namespace fs = std::filesystem;
 int WIDTH;
 int HEIGHT;
 
+string QuoteShellArg(const string &$arg)
+{
 #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-std::string QuoteShellArgUnix(const std::string &$arg){
-    std::string ret="'";
-    ret.reserve($arg.length()+10); // ¯\_(ツ)_/¯ should avoid realloc in most cases
-    for(size_t i=0;i<$arg.length();++i){
-        if($arg[i]=='\00'){
-            throw std::runtime_error("argument contains null bytes, it is impossible to escape null bytes on unix!");
-        } else if($arg[i]=='\'') {
-            ret+="'\\''";
-        } else {
-            ret += $arg[i];
-        }
-    }
-    ret+="'";
-    return ret;
-}
-#endif
-#if defined(_WIN32) || defined(_WIN64)
-std::string QuoteShellArgWindows(const std::string &$arg){
-	// todo make a proper quote function 
-	// which is non-trivial, the Windows escape rules are *complex* and even differ between system()/.bat invocations and manual cmd invocations
-	// maybe try porting https://stackoverflow.com/a/29215357/1067003
-	return std::string("\"")+$arg+std::string("\"");
-}
-#endif
-std::string QuoteShellArg(const std::string &$arg){
-	#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-	return QuoteShellArgUnix($arg);
-	#endif
-	
-	#if defined(_WIN32) || defined(_WIN64)
-	return QuoteShellArgWindows($arg);
-	#endif
-}
+	string ret="'";
+	ret.reserve($arg.length()+10); // ¯\_(ツ)_/¯ should avoid realloc in most cases
+	for(size_t i=0;i<$arg.length();++i)
+	{
+		if($arg[i]=='\00')
+			throw runtime_error("argument contains null bytes, it is impossible to escape null bytes on unix!");
+		else if($arg[i]=='\'')
+			ret+="'\\''";
+		else
+			ret += $arg[i];
+	}
+	ret+="'";
+	return ret;
 
+#elif defined(_WIN32) || defined(_WIN64)
+	// todo
+	// the Windows escape rules are *complex* and even differ between system()/.bat invocations and manual cmd invocations
+	// maybe try porting https://stackoverflow.com/a/29215357/1067003
+	return string("\"") + $arg + string("\"");
+#endif
+
+    throw runtime_error("Unsupported OS !");
+}
 
 void ClearScreen()
 {
@@ -106,7 +97,7 @@ int main(int argc, const char* argv[])
 
 	auto self_path = fs::path(argv[0]);
 	cout << self_path << endl;
-
+/*
 	Pipe pipeIn, pipeOut;
 	pipeIn.Open("ffmpeg.exe -i input.mp3 -map_metadata -1 -f wav -c:a pcm_f32le -");
 	pipeOut.Open("opusenc.exe --ignorelength --bitrate 128 - output.opus", true);
@@ -120,7 +111,7 @@ int main(int argc, const char* argv[])
 
 	pipeIn.Close();
 	pipeOut.Close();
-
+*/
 	//save_frames(ff, fl, 20, 50);
 	return 0;
 }
