@@ -1,13 +1,11 @@
 #include <cerrno>
 #include <cmath>
 #include <cstdio>
-#include <stdexcept>
 #include <string>
 #include <format>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
-#include <system_error>
 
 using namespace std;
 
@@ -61,16 +59,13 @@ int main(int argc, const char* argv[])
 	int ret = ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vf select='between(n\\,1\\,100)' -vsync 0 -f image2pipe -vcodec png -");
     if (ret != 0)
 	{
-		throw runtime_error(format(" Unable to Open Pipe, error {} : {}", errno, strerror(errno)));
+		throw runtime_error(format("\n\033[91;1;3m==> Unable to Open Pipe, error {} : {}\033[m", errno, strerror(errno)));
 	}
 
-    size_t rs;
 	uint8_t buf[16384];
-	
-	rs = ffpipe.Read(buf, sizeof(buf));
+	size_t rs = ffpipe.Read(buf, sizeof(buf));
 
-    uint32_t image_size = *(uint32_t*)&buf[2];
-    cout << image_size << endl;
+    cout << rs << endl;
 
 	ffpipe.Close();
 	return 0;

@@ -1,9 +1,12 @@
-// This file was taken from a Public Gist and needs a lot of Refactoring
+// This file was taken from a Public Gist, was modified a little
+// and needs a lot of Refactoring (especially the windows crap)
 
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
+#include <errno.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #define USE_POPEN 1
 
@@ -47,7 +50,7 @@ int Pipe::Open(const char *cmdLine, bool write)
 	fp = popen(cmdLine, write ? "wb" : "rb");
 	if (!fp) return -1; //return WEXITSTATUS(pclose(fp));
 
-	int pipe_sz = fcntl(0, F_SETPIPE_SZ, 104857600/*100MB*/);
+	fcntl(fileno(fp), F_SETPIPE_SZ, 104857600/*100MB*/);	// Increasing Pipe Buffer
 	return 0;
 }
 
