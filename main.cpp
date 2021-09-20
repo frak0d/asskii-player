@@ -10,6 +10,8 @@
 using namespace std;
 namespace fs = std::filesystem;
 
+#include "pipe.hpp"
+
 int WIDTH;
 int HEIGHT;
 
@@ -68,7 +70,21 @@ int main(int argc, const char* argv[])
 
 	auto self_path = fs::path(argv[0]);
 	cout << self_path << endl;
-	
+
+	Pipe pipeIn, pipeOut;
+	pipeIn.Open("ffmpeg.exe -i input.mp3 -map_metadata -1 -f wav -c:a pcm_f32le -");
+	pipeOut.Open("opusenc.exe --ignorelength --bitrate 128 - output.opus", true);
+
+	char buf[16384];
+	size_t res = 0;
+	do {
+	  res = pipeIn.Read(buf, sizeof(buf));
+	  pipeOut.Write(buf, res);
+	} while (res != 0);
+
+	pipeIn.Close();
+	pipeOut.Close();
+
 	//save_frames(ff, fl, 20, 50);
 	return 0;
 }
