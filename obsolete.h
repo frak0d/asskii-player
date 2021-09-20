@@ -1,3 +1,5 @@
+// Here lies the old but now unused functions & other stuff
+
 #include <string>
 #include <format>
 
