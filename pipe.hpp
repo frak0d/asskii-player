@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <cstdio>
 
 #define USE_POPEN 1
@@ -30,8 +31,8 @@ public:
 
   int Open(const char *cmdline, bool write = false);
   int Close();
-  size_t Read(char *buffer, size_t size);
-  size_t Write(char *buffer, size_t size);
+  size_t Read(uint8_t* buffer, size_t size);
+  size_t Write(uint8_t* buffer, size_t size);
 };
 
 #if USE_POPEN
@@ -53,12 +54,12 @@ int Pipe::Close()
   return 0;
 }
 
-size_t Pipe::Read(char *buffer, size_t size)
+size_t Pipe::Read(uint8_t *buffer, size_t size)
 {
   return fread(buffer, 1, size, fp);
 }
 
-size_t Pipe::Write(char *buffer, size_t size)
+size_t Pipe::Write(uint8_t* buffer, size_t size)
 {
   return fwrite(buffer, 1, size, fp);
 }

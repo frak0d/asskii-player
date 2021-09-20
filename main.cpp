@@ -5,10 +5,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
-#include <filesystem>
 
 using namespace std;
-namespace fs = std::filesystem;
 
 #include "pipe.hpp"
 
@@ -37,9 +35,10 @@ string QuoteShellArg(const string &$arg)
 	// the Windows escape rules are *complex* and even differ between system()/.bat invocations and manual cmd invocations
 	// maybe try porting https://stackoverflow.com/a/29215357/1067003
 	return string("\"") + $arg + string("\"");
-#endif
 
-    throw runtime_error("Unsupported OS !");
+#else
+	#error "Unsupported OS !"
+#endif
 }
 
 void ClearScreen()
@@ -53,65 +52,20 @@ void ClearScreen()
 	#endif
 }
 
-void DeleteFile(const string& filename)
-{
-	#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-		system(format("rm {}", QuoteShellArg(filename)).c_str());
-	#endif
-
-	#if defined(_WIN32) || defined(_WIN64)
-		system(format("del {}", QuoteShellArg(filename)).c_str());
-	#endif
-}
-
-void DeleteFolder(const string& foldername)
-{
-	#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-		system(format("rm -r {}", QuoteShellArg(foldername)).c_str());
-	#endif
-
-	#if defined(_WIN32) || defined(_WIN64)
-		system(format("rmdir {}", QuoteShellArg(foldername)).c_str());
-	#endif
-}
-
-void save_frames(const string& ffpath, const string& filepath, const uint32_t start_num, const uint32_t end_num)
-{
-	string command = format("{0} -i {1} -vf select='between(n,{2},{3})' -vsync 0 -start_number {2} frame-%03d.png",
-							QuoteShellArg(ffpath), QuoteShellArg(filepath), start_num, end_num);
-	system(command.c_str());
-}
-
-void delete_frames(const string& folderpath, const uint32_t start_num, const uint32_t end_num)
-{
-	for (int i = start_num; i <= end_num; ++i)
-	{
-		DeleteFile(format("{}/frame-{:3d}", folderpath, i));
-	}
-}
-
 int main(int argc, const char* argv[])
 {
-	string ff = "ffmpeg";
-	string fl = "test.3gp";
+	Pipe ffpipe;
+    ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vf select='between(n,1,100)' -vsync 0"
+                "-f image2pipe -vcodec png -");
 
-	auto self_path = fs::path(argv[0]);
-	cout << self_path << endl;
-/*
-	Pipe pipeIn, pipeOut;
-	pipeIn.Open("ffmpeg.exe -i input.mp3 -map_metadata -1 -f wav -c:a pcm_f32le -");
-	pipeOut.Open("opusenc.exe --ignorelength --bitrate 128 - output.opus", true);
+    size_t rs;
+	uint8_t buf[16384];
+	
+	rs = ffpipe.Read(buf, sizeof(buf));
 
-	char buf[16384];
-	size_t res = 0;
-	do {
-	  res = pipeIn.Read(buf, sizeof(buf));
-	  pipeOut.Write(buf, res);
-	} while (res != 0);
+    uint32_t image_size = *(uint32_t*)&buf[2];
+    cout << image_size << endl;
 
-	pipeIn.Close();
-	pipeOut.Close();
-*/
-	//save_frames(ff, fl, 20, 50);
+	ffpipe.Close();
 	return 0;
 }
