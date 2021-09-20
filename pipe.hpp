@@ -27,7 +27,7 @@ private:
 
 public:
   Pipe();
-  ~Pipe() { Close(); }
+ ~Pipe() { Close(); }
 
   int Open(const char *cmdline, bool write = false);
   int Close();

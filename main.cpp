@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstdio>
+#include <stdexcept>
 #include <string>
 #include <format>
 #include <cstdint>
@@ -55,8 +56,10 @@ void ClearScreen()
 int main(int argc, const char* argv[])
 {
 	Pipe ffpipe;
-    ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vf select='between(n,1,100)' -vsync 0"
-                "-f image2pipe -vcodec png -");
+    if (ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vf select='between(n,1,100)' -vsync 0 -f image2pipe -vcodec png -") != 0)
+	{
+		throw runtime_error(" Unable to Open Pipe !");
+	}
 
     size_t rs;
 	uint8_t buf[16384];
