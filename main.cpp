@@ -1,3 +1,4 @@
+#include <cerrno>
 #include <cmath>
 #include <cstdio>
 #include <stdexcept>
@@ -6,6 +7,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <system_error>
 
 using namespace std;
 
@@ -59,7 +61,7 @@ int main(int argc, const char* argv[])
 	int ret = ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vf select='between(n\\,1\\,100)' -vsync 0 -f image2pipe -vcodec png -");
     if (ret != 0)
 	{
-		throw runtime_error(format(" Unable to Open Pipe, return code is {}", ret));
+		throw runtime_error(format(" Unable to Open Pipe, error {} : {}", errno, strerror(errno)));
 	}
 
     size_t rs;

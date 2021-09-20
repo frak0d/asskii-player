@@ -1,7 +1,9 @@
+// This file was taken from a Public Gist and needs a lot of Refactoring
+
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <iostream>
+#include <fcntl.h>
 
 #define USE_POPEN 1
 
@@ -43,9 +45,10 @@ Pipe::Pipe() { fp = NULL; }
 int Pipe::Open(const char *cmdLine, bool write)
 {
 	fp = popen(cmdLine, write ? "wb" : "rb");
+	if (!fp) return -1; //return WEXITSTATUS(pclose(fp));
 
-	if (!fp) return WEXITSTATUS(pclose(fp));
-	else return 0;
+	int pipe_sz = fcntl(0, F_SETPIPE_SZ, 104857600/*100MB*/);
+	return 0;
 }
 
 int Pipe::Close()
