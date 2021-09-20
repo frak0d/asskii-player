@@ -56,9 +56,10 @@ void ClearScreen()
 int main(int argc, const char* argv[])
 {
 	Pipe ffpipe;
-    if (ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vf select='between(n,1,100)' -vsync 0 -f image2pipe -vcodec png -") != 0)
+	int ret = ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vf select='between(n\\,1\\,100)' -vsync 0 -f image2pipe -vcodec png -");
+    if (ret != 0)
 	{
-		throw runtime_error(" Unable to Open Pipe !");
+		throw runtime_error(format(" Unable to Open Pipe, return code is {}", ret));
 	}
 
     size_t rs;
