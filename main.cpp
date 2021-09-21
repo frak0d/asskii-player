@@ -57,7 +57,7 @@ void ClearScreen()
 
 struct config
 {
-	string vid_in;
+	string vid_path;
 	bool color = false;
 	bool blocks = false;
 };
@@ -73,11 +73,20 @@ config ArgumentParser(int argc, const char* argv[])
 			 << "              (Requires --color, --color will be enabled)\n" << endl;
 		exit(-1);
 	}
-
-	config cfg;
-	for (int i=1 ; i < argc ; i++)
+	else if (string(argv[1]) == "--color" || string(argv[1]) == "--blocks")
 	{
-		// Work In Progress
+		puts("\033[91;1;3m==> Error : No Video File Specified !\033[m");
+		exit(-1);
+	}
+	config cfg;
+	cfg.vid_path = argv[1];
+	
+	string tok;
+	for (int i=2 ; i < argc ; i++)	//argv[0] is exe name, argv[1] is video name
+	{
+		tok = argv[i];
+		if 		(tok == "--color" ) cfg.color  = true;
+		else if (tok == "--blocks") cfg.blocks = true;
 	}
     return cfg;
 }
@@ -91,7 +100,7 @@ int main(int argc, const char* argv[])
 	char test_cmd[500];
 	snprintf(test_cmd, 500, "ffmpeg -i %s -v quiet -vsync 0 -s %ux%u "
 							"-f image2pipe -vcodec rawvideo -pix_fmt rgb24 -",
-							cfg.vid_in.c_str(), WIDTH, HEIGHT);
+							cfg.vid_path.c_str(), WIDTH, HEIGHT);
 	
 	FILE* ffpipe = popen(test_cmd, "r");
 	if (!ffpipe)
