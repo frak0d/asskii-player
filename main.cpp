@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <unistd.h>
 
 using namespace std;
 
@@ -55,20 +56,19 @@ void ClearScreen()
 
 int main(int argc, const char* argv[])
 {
-	Pipe ffpipe;
-	int ret = ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vsync 0 -vf select='between(n\\,1\\,100)' -vcodec png -f image2pipe -", true);
-	
-	if (ret != 0)
+	uint8_t buf[102400/*100KB*/];
+	char test_cmd[] = "ffmpeg -i test.3gp -vsync 0 -s 160x90 -v quiet "
+					  "-f image2pipe -vcodec rawvideo -pix_fmt rgb24 -";
+
+	FILE* ffpipe = popen(test_cmd, "r");
+	if (!ffpipe)
 	{
-		throw runtime_error(format("\n\033[91;1;3m==> Unable to Open Pipe, error {} : {}\033[m", errno, strerror(errno)));
+		printf("\033[91;1;3m==> Unable to Open Pipe, error %d : %s\033[m\n", errno, strerror(errno));
+		exit(-1);
 	}
 
-	uint8_t buf[100000];
-	size_t rs = ffpipe.Read(buf, sizeof(buf));
-
-    cout << "\033[91;1;3m ++++++++ rs : " << rs << " +++++++++ \033[m\n"
-		 << (char*)buf << endl;
-
-	ffpipe.Close();
-	return 0;
+	size_t rs = fread(buf, 1, sizeof(buf), ffpipe);
+    cout << "\n\033[94;1;3m ++++++++ Read " << rs << " Bytes +++++++++ \033[m\n" << endl;
+    cout << "\033[96;1m ==> Closing Pipe, " << strerror(pclose(ffpipe)) << "\033[m" << endl;
+    return 0;
 }
