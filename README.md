@@ -3,7 +3,7 @@
 Ascii Video Player that runs in any modern Console. [W.I.P]
 
 ## Usage :-
-1. Build the asskii-player with a C++20 Compatible Compiler.
+1. Build the asskii-player with a <s>C++20</s> C++11 Compatible Compiler.
 2. FFmpeg should be in Path.
 3. Run asskii-player from commandline.
 
