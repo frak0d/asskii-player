@@ -56,17 +56,18 @@ void ClearScreen()
 int main(int argc, const char* argv[])
 {
 	Pipe ffpipe;
-	int ret = ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vsync 0 -vf select='between(n\\,1\\,100)' -vcodec jpeg -f image2pipe -");
+	int ret = ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vsync 0 -vf select='between(n\\,1\\,100)' -vcodec png -f image2pipe -", true);
 	
 	if (ret != 0)
 	{
 		throw runtime_error(format("\n\033[91;1;3m==> Unable to Open Pipe, error {} : {}\033[m", errno, strerror(errno)));
 	}
 
-	uint8_t buf[16384];
+	uint8_t buf[100000];
 	size_t rs = ffpipe.Read(buf, sizeof(buf));
 
-    cout << buf << endl;
+    cout << "\033[91;1;3m ++++++++ rs : " << rs << " +++++++++ \033[m\n"
+		 << (char*)buf << endl;
 
 	ffpipe.Close();
 	return 0;
