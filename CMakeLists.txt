@@ -9,10 +9,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # --------------COMPILER SPECIFIC---------------- #
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-	set(CMAKE_CXX_FLAGS "-O3 -s -Wall -flto -stdlib=libc++ -fuse-ld=lld")
+	set(CMAKE_CXX_FLAGS "-O3 -Wall -flto -stdlib=libc++")
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-	set(CMAKE_CXX_FLAGS "-O3 -s -Wall")
+	set(CMAKE_CXX_FLAGS "-O3 -Wall -flto -s")
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 #	Nobody Uses Windows Anyways ;)

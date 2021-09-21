@@ -1,6 +1,7 @@
 #include <cerrno>
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <format>
 #include <cstdint>
@@ -12,8 +13,8 @@ using namespace std;
 
 #include "pipe.hpp"
 
-int WIDTH;
-int HEIGHT;
+uint WIDTH  = 160;
+uint HEIGHT = 100;
 
 string QuoteShellArg(const string& arg)
 {
@@ -54,12 +55,44 @@ void ClearScreen()
 	#endif
 }
 
+struct config
+{
+	string vid_in;
+	bool color = false;
+	bool blocks = false;
+};
+
+config ArgumentParser(int argc, const char* argv[])
+{
+	if (argc == 1)
+	{
+		cout << "Usage :-\n"
+			 << "./asski-player [video path] <optional arguments>\n\n"
+			 << "--color   -->  Display the Video in 24-bit Colors\n"
+			 << "--blocks  -->  Use Filled Blocks instead of Ascii Symbols\n"
+			 << "              (Requires --color, --color will be enabled)\n" << endl;
+		exit(-1);
+	}
+
+	config cfg;
+	for (int i=1 ; i < argc ; i++)
+	{
+		// Work In Progress
+	}
+    return cfg;
+}
+
 int main(int argc, const char* argv[])
 {
-	uint8_t buf[102400/*100KB*/];
-	char test_cmd[] = "ffmpeg -i test.3gp -vsync 0 -s 160x90 -v quiet "
-					  "-f image2pipe -vcodec rawvideo -pix_fmt rgb24 -";
+	config cfg = ArgumentParser(argc, argv);
 
+	uint8_t buf[102400/*100KB*/];
+
+	char test_cmd[300];
+	sprintf(test_cmd, "ffmpeg -i %s -v quiet -vsync 0 -s %ux%u "
+					  "-f image2pipe -vcodec rawvideo -pix_fmt rgb24 -",
+					  cfg.vid_in.c_str(), WIDTH, HEIGHT);
+	
 	FILE* ffpipe = popen(test_cmd, "r");
 	if (!ffpipe)
 	{

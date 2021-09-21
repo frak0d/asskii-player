@@ -1,2 +1,2 @@
 CompileFlags:
-  Add: [-xc++, -Wall, -stdlib=libc++, -O3, -flto, -fuse-ld=lld]
+  Add: [-xc++, -Wall, -stdlib=libc++, -O3, -flto]
