@@ -88,10 +88,10 @@ int main(int argc, const char* argv[])
 
 	uint8_t buf[102400/*100KB*/];
 
-	char test_cmd[300];
-	sprintf(test_cmd, "ffmpeg -i %s -v quiet -vsync 0 -s %ux%u "
-					  "-f image2pipe -vcodec rawvideo -pix_fmt rgb24 -",
-					  cfg.vid_in.c_str(), WIDTH, HEIGHT);
+	char test_cmd[500];
+	snprintf(test_cmd, 500, "ffmpeg -i %s -v quiet -vsync 0 -s %ux%u "
+							"-f image2pipe -vcodec rawvideo -pix_fmt rgb24 -",
+							cfg.vid_in.c_str(), WIDTH, HEIGHT);
 	
 	FILE* ffpipe = popen(test_cmd, "r");
 	if (!ffpipe)
@@ -101,7 +101,7 @@ int main(int argc, const char* argv[])
 	}
 
 	size_t rs = fread(buf, 1, sizeof(buf), ffpipe);
-    cout << "\n\033[94;1;3m ++++++++ Read " << rs << " Bytes +++++++++ \033[m\n" << endl;
-    cout << "\033[96;1m ==> Closing Pipe, " << strerror(pclose(ffpipe)) << "\033[m" << endl;
+    printf("\n\033[94;1;3m ++++++++ Read %lu Bytes +++++++++ \033[m\n", rs);
+    printf("\n\033[96;1m ==> Closing Pipe, %s\033[m\n", strerror(pclose(ffpipe)));
     return 0;
 }
