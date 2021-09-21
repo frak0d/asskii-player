@@ -14,19 +14,19 @@ using namespace std;
 int WIDTH;
 int HEIGHT;
 
-string QuoteShellArg(const string &$arg)
+string QuoteShellArg(const string& arg)
 {
 #if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
 	string ret="'";
-	ret.reserve($arg.length()+10); // ¯\_(ツ)_/¯ should avoid realloc in most cases
-	for(size_t i=0;i<$arg.length();++i)
+	ret.reserve(arg.length()+10); // ¯\_(ツ)_/¯ should avoid realloc in most cases
+	for(size_t i=0;i<arg.length();++i)
 	{
-		if($arg[i]=='\00')
+		if(arg[i]=='\00')
 			throw runtime_error("argument contains null bytes, it is impossible to escape null bytes on unix!");
-		else if($arg[i]=='\'')
+		else if(arg[i]=='\'')
 			ret+="'\\''";
 		else
-			ret += $arg[i];
+			ret += arg[i];
 	}
 	ret+="'";
 	return ret;
@@ -35,7 +35,7 @@ string QuoteShellArg(const string &$arg)
 	// todo
 	// the Windows escape rules are *complex* and even differ between system()/.bat invocations and manual cmd invocations
 	// maybe try porting https://stackoverflow.com/a/29215357/1067003
-	return string("\"") + $arg + string("\"");
+	return string("\"") + arg + string("\"");
 
 #else
 	#error "Unsupported OS !"
@@ -56,8 +56,9 @@ void ClearScreen()
 int main(int argc, const char* argv[])
 {
 	Pipe ffpipe;
-	int ret = ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vsync 0 -vf select='between(n\\,1\\,100)' -f image2pipe -vcodec png -");
-    if (ret != 0)
+	int ret = ffpipe.Open("ffmpeg -i test.3gp -s 160x90 -vsync 0 -vf select='between(n\\,1\\,100)' -vcodec jpeg -f image2pipe -");
+	
+	if (ret != 0)
 	{
 		throw runtime_error(format("\n\033[91;1;3m==> Unable to Open Pipe, error {} : {}\033[m", errno, strerror(errno)));
 	}
@@ -65,7 +66,7 @@ int main(int argc, const char* argv[])
 	uint8_t buf[16384];
 	size_t rs = ffpipe.Read(buf, sizeof(buf));
 
-    cout << rs << endl;
+    cout << buf << endl;
 
 	ffpipe.Close();
 	return 0;
