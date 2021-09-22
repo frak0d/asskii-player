@@ -10,9 +10,6 @@
 
 using namespace std;
 
-uint WIDTH  = 90;
-uint HEIGHT = 50;
-
 const char shade_list[] = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
 const char* arg_list[] = {"-w", "-h", "--color", "--block"};
 int arg_count = 4;
@@ -81,11 +78,14 @@ config ArgumentParser(int argc, const char* argv[])
 	if (argc == 1)
 	{
 		cout << "Usage :-\n"
-			 << "./asski-player [video path] <optional arguments>\n\n"
+			 << "./asski-player [video path] <optional arguments>\n"
+			 << "\n"
 			 << "-w & -h   -->  Set Frame Width & Height, deafults are 90x50\n"
 			 << "--color   -->  Display the Video in 24-bit Colors\n"
 			 << "--block   -->  Specify the character to use as pixel in Color Mode\n"
-			 << "               (it will be ignored when not using color)\n" << endl;
+			 << "               (it will be ignored when not using color)\n"
+			 << "\n"
+			 << "Note : Unknown Arguments are silently ignored." << endl;
 		exit(-1);
 	}
 	else if (isInArgList(argv[1]))
