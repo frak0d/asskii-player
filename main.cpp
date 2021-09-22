@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
-#include <format>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
@@ -11,10 +10,11 @@
 
 using namespace std;
 
-#include "pipe.hpp"
+uint WIDTH  = 80;
+uint HEIGHT = 50;
 
-uint WIDTH  = 160;
-uint HEIGHT = 100;
+int shades = 5;
+char shade_list[] = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
 
 string QuoteShellArg(const string& arg)
 {
@@ -95,8 +95,10 @@ int main(int argc, const char* argv[])
 {
 	config cfg = ArgumentParser(argc, argv);
 
-	uint8_t buf[102400/*100KB*/];
-
+	int pos = 0;
+	uint8_t brightness = 0;
+	uint8_t buf[WIDTH*3*HEIGHT];	// Save one image in buffer
+	
 	char test_cmd[500];
 	snprintf(test_cmd, 500, "ffmpeg -i %s -v quiet -vsync 0 -s %ux%u "
 							"-f image2pipe -vcodec rawvideo -pix_fmt rgb24 -",
@@ -109,8 +111,24 @@ int main(int argc, const char* argv[])
 		exit(-1);
 	}
 
-	size_t rs = fread(buf, 1, sizeof(buf), ffpipe);
-    printf("\n\033[94;1;3m ++++++++ Read %lu Bytes +++++++++ \033[m\n", rs);
+	while (true)
+	{
+		size_t rs = fread(buf, 1, sizeof(buf), ffpipe);
+    	//printf("\n\033[94;1;3m ++++++++ Read %lu Bytes +++++++++ \033[m\n", rs);
+    	for (int y=0 ; y < HEIGHT ; ++y)
+    	{
+    		for (int x=0 ; x < WIDTH ; ++x)
+    		{
+    			++pos;
+    			brightness = (buf[3*pos-2]/16 + buf[3*pos-1]/16 + buf[3*pos]/16) / 3;
+    			printf("%c", shade_list[brightness*2]);
+    		}
+    		puts("");	// Newline
+    	}
+    	pos = 0;
+    	ClearScreen();
+	}
+    
     printf("\n\033[96;1m ==> Closing Pipe, %s\033[m\n", strerror(pclose(ffpipe)));
     return 0;
 }
