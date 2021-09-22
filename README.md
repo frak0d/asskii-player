@@ -7,7 +7,8 @@ Ascii Video Player that runs in any modern Console. [W.I.P]
 2. FFmpeg should be in Path.
 3. Run asskii-player from commandline.
 
-## Working Idea :-  (✔️=Done, 🕐=Pending)
+## Working Idea :-
+(✔️=Done, 🕐=Pending)
 1. Extract video frames using ffmpeg. ✔️
 2. Pipe the frames into the program. ✔️
 3. Display the frames as ascii art on console ✔️ with optional --color 🕐
