@@ -12,7 +12,7 @@ using namespace std;
 
 const char shade_list[] = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
 const char* arg_list[] = {"-w", "-h", "--color", "--block"};
-int arg_count = 4;
+const uint arg_count = 4;
 
 string QuoteShellArg(const string& arg)
 {
@@ -66,7 +66,7 @@ struct config
 bool isInArgList(const char* ag)
 {
 	string tok = ag;
-	for (int i=0 ; i < arg_count; ++i)
+	for (uint i=0 ; i < arg_count; ++i)
 	{
 		if (tok == arg_list[i]) return true;
 	}
@@ -135,9 +135,9 @@ int main(int argc, const char* argv[])
 	do {
 		rs = fread(buf, 1, sizeof(buf), ffpipe);
     	//printf("\n\033[94;1;3m ++++++++ Read %lu Bytes +++++++++ \033[m\n", rs);
-    	for (int y=0 ; y < HEIGHT ; ++y)
+    	for (uint y=0 ; y < cfg.height ; ++y)
     	{
-    		for (int x=0 ; x < WIDTH ; ++x)
+    		for (uint x=0 ; x < cfg.width ; ++x)
     		{
     			++pos;
     			if (!cfg.color)
