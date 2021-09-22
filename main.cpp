@@ -5,15 +5,17 @@
 #include <string>
 #include <cstdint>
 #include <cstdlib>
-#include <iostream>
 #include <unistd.h>
+#include <iostream>
 
 using namespace std;
 
-uint WIDTH  = 60;
-uint HEIGHT = 40;
+uint WIDTH  = 90;
+uint HEIGHT = 50;
 
-char shade_list[] = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
+const char shade_list[] = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
+const char* arg_list[] = {"-w", "-h", "--color", "--block"};
+int arg_count = 4;
 
 string QuoteShellArg(const string& arg)
 {
@@ -59,8 +61,20 @@ struct config
 	string vid_path;
 	uint8_t shades = 32;
 	bool color = false;
-	char block = false;
+	char block = '#';
+	uint width = 90;
+	uint height = 50;
 };
+
+bool isInArgList(const char* ag)
+{
+	string tok = ag;
+	for (int i=0 ; i < arg_count; ++i)
+	{
+		if (tok == arg_list[i]) return true;
+	}
+	return false;
+}
 
 config ArgumentParser(int argc, const char* argv[])
 {
@@ -68,12 +82,13 @@ config ArgumentParser(int argc, const char* argv[])
 	{
 		cout << "Usage :-\n"
 			 << "./asski-player [video path] <optional arguments>\n\n"
+			 << "-w & -h   -->  Set Frame Width & Height, deafults are 90x50\n"
 			 << "--color   -->  Display the Video in 24-bit Colors\n"
 			 << "--block   -->  Specify the character to use as pixel in Color Mode\n"
 			 << "               (it will be ignored when not using color)\n" << endl;
 		exit(-1);
 	}
-	else if (string(argv[1]) == "--color" || string(argv[1]) == "--block")
+	else if (isInArgList(argv[1]))
 	{
 		puts("\033[91;1;3m==> Error : No Video File Specified !\033[m");
 		exit(-1);
@@ -87,6 +102,8 @@ config ArgumentParser(int argc, const char* argv[])
 		tok = argv[i];
 		if 		(tok == "--color") cfg.color = true;
 		else if (tok == "--block") cfg.block = *argv[i+1];
+		else if (tok == "-w") cfg.width  = stoi(argv[i+1]);
+		else if (tok == "-h") cfg.height = stoi(argv[i+1]);
 	}
     return cfg;
 }
@@ -101,17 +118,17 @@ int main(int argc, const char* argv[])
 	float sf2 = sizeof(shade_list) / cfg.shades;
 	uint8_t brightness = 0;
 	
-	uint8_t buf[WIDTH*3*HEIGHT];	// Save one image in buffer
+	uint8_t buf[cfg.width*3*cfg.height];	// Save one image in buffer
 	
 	char test_cmd[500];
 	snprintf(test_cmd, 500, "ffmpeg -i %s -v quiet -vsync 1 -s %ux%u "
 							"-f image2pipe -vcodec rawvideo -pix_fmt rgb24 -",
-							cfg.vid_path.c_str(), WIDTH, HEIGHT);
+							cfg.vid_path.c_str(), cfg.width, cfg.height);
 	
 	FILE* ffpipe = popen(test_cmd, "r");
 	if (!ffpipe)
 	{
-		printf("\033[91;1;3m==> Unable to Open Pipe, error %d : %s\033[m\n", errno, strerror(errno));
+		printf("\e[91;1;3m==> Unable to Open Pipe, error %d : %s\033[m\n", errno, strerror(errno));
 		exit(-1);
 	}
 
@@ -126,12 +143,11 @@ int main(int argc, const char* argv[])
     			if (!cfg.color)
     			{
     				brightness = (buf[3*pos-2]/sf1 + buf[3*pos-1]/sf1 + buf[3*pos]/sf1) / 3;
-    				printf(" %c", shade_list[(int)(brightness*sf2)]);
+    				printf("%c", shade_list[(int)(brightness*sf2)]);
     			}
     			else
     			{
-    				puts("Color Mode Not Yet Supported !!");
-    				exit(-2);
+    				printf("\e[38;2;%u;%u;%um%c", buf[3*pos-2], buf[3*pos-1], buf[3*pos], cfg.block);
     			}
     		}
     		puts("");	// Newline
@@ -140,6 +156,6 @@ int main(int argc, const char* argv[])
     	ClearScreen();
 	} while (rs == sizeof(buf));
     
-    printf("\n\033[96;1m ==> Closing Pipe, %s\033[m\n", strerror(pclose(ffpipe)));
+    printf("\n\e[96;1m ==> Closing Pipe, %s\033[m\n", strerror(pclose(ffpipe)));
     return 0;
 }
