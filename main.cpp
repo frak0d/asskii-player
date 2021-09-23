@@ -6,13 +6,12 @@
 #include <cstdint>
 #include <cstdlib>
 #include <unistd.h>
-#include <iostream>
 
 using namespace std;
 
 const char shade_list[] = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
-const char* arg_list[] = {"-w", "-h", "--color", "--block"};
-const uint arg_count = 4;
+const char* arg_list[] = {"-w", "-h", "--color", "--block", "--shades"};
+const uint arg_count = 5;
 
 string QuoteShellArg(const string& arg)
 {
@@ -22,7 +21,10 @@ string QuoteShellArg(const string& arg)
 	for(size_t i=0;i<arg.length();++i)
 	{
 		if(arg[i]=='\0')
-			throw runtime_error("argument contains null bytes, it is impossible to escape null bytes on unix!");
+		{
+			puts("argument contains null bytes, it is impossible to escape null bytes on unix!");
+			exit(-4);
+		}
 		else if(arg[i]=='\'')
 			ret+="'\\''";
 		else
@@ -59,8 +61,8 @@ struct config
 	uint8_t shades = 32;
 	bool color = false;
 	char block = '#';
-	uint width = 90;
-	uint height = 50;
+	uint width = 80;
+	uint height = 45;
 };
 
 bool isInArgList(const char* ag)
@@ -75,17 +77,22 @@ bool isInArgList(const char* ag)
 
 config ArgumentParser(int argc, const char* argv[])
 {
+	config cfg;
+	
 	if (argc == 1)
 	{
-		cout << "Usage :-\n"
-			 << "./asski-player [video path] <optional arguments>\n"
-			 << "\n"
-			 << "-w & -h   -->  Set Frame Width & Height, deafults are 90x50\n"
-			 << "--color   -->  Display the Video in 24-bit Colors\n"
-			 << "--block   -->  Specify the character to use as pixel in Color Mode\n"
-			 << "               (it will be ignored when not using color)\n"
-			 << "\n"
-			 << "Note : Unknown Arguments are silently ignored." << endl;
+		printf( "Usage :-\n"
+				"./asski-player [video path] <optional arguments>\n"
+				"\n"
+				"-w & -h   -->  Set Frame Width & Height (defaults are -w %u -h %u)\n"
+				"--color   -->  Display the Video in 24-bit Colors (Slow on some Terminals)\n"
+				"--block   -->  Specify the character to use as pixel in Color Mode (default is %c)\n"
+				"               (ignored in non-color mode)\n"
+				"--shades  -->  Specify the number of ascii shades (default is %u)\n"
+				"               (ignored in color mode)\n"
+				"\n"
+				"Note : Unknown Arguments are silently ignored.\n",
+				 cfg.width, cfg.height, cfg.block, cfg.shades);
 		exit(-1);
 	}
 	else if (isInArgList(argv[1]))
@@ -93,7 +100,7 @@ config ArgumentParser(int argc, const char* argv[])
 		puts("\033[91;1;3m==> Error : No Video File Specified !\033[m");
 		exit(-1);
 	}
-	config cfg;
+	
 	cfg.vid_path = argv[1];
 	
 	string tok;
@@ -102,6 +109,7 @@ config ArgumentParser(int argc, const char* argv[])
 		tok = argv[i];
 		if 		(tok == "--color") cfg.color = true;
 		else if (tok == "--block") cfg.block = *argv[i+1];
+		else if (tok == "--shades") cfg.shades = stoi(argv[i+1]);
 		else if (tok == "-w") cfg.width  = stoi(argv[i+1]);
 		else if (tok == "-h") cfg.height = stoi(argv[i+1]);
 	}
