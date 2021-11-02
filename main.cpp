@@ -44,8 +44,9 @@ string QuoteShellArg(const string& arg)
 #endif
 }
 
-void ClearScreen()
+inline void ClearScreen()
 {
+/*
 	#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
 		system("clear");
 	#endif
@@ -53,6 +54,8 @@ void ClearScreen()
 	#if defined(_WIN32) || defined(_WIN64)
 		system("cls");
 	#endif
+*/
+    printf("\033[2J\033[H");
 }
 
 struct config
