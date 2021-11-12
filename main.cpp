@@ -1,17 +1,16 @@
 #include <cerrno>
-#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <string>
 #include <cstdint>
 #include <cstdlib>
-#include <unistd.h>
+#include <csignal>
 
 using namespace std;
 
 const char shade_list[] = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
-const char* arg_list[] = {"-w", "-h", "--color", "--block", "--shades"};
-const uint arg_count = 5;
+const char* arg_list[] = {"-w", "-h", "--color", "--block", "--shades", "--nobg"};
+const uint arg_count = 6;
 
 inline void ClearScreen()
 {
@@ -24,7 +23,7 @@ inline void ClearScreen()
 		system("cls");
 	#endif
 */
-    printf("\033[2J\033[H");
+    printf("\e[m\e[2J\e[H");
 }
 
 struct config
@@ -32,6 +31,7 @@ struct config
 	string vid_path;
 	uint8_t shades = 32;
 	bool color = false;
+	bool nobg = false;
 	char block = '#';
 	uint width = 80;
 	uint height = 45;
@@ -62,6 +62,7 @@ config ArgumentParser(int argc, const char* argv[])
 				"               (ignored in non-color mode)\n"
 				"--shades  -->  Specify the number of ascii shades (default is %u)\n"
 				"               (ignored in color mode)\n"
+				"--nobg    -->  Does not print the background black."
 				"\n"
 				"Note : Unknown Arguments are silently ignored.\n",
 				 cfg.width, cfg.height, cfg.block, cfg.shades);
@@ -69,7 +70,7 @@ config ArgumentParser(int argc, const char* argv[])
 	}
 	else if (isInArgList(argv[1]))
 	{
-		puts("\033[91;1;3m==> Error : No Video File Specified !\033[m");
+		puts("\e[91;1;3m==> Error : No Video File Specified !\e[0m");
 		exit(-1);
 	}
 	
@@ -84,12 +85,21 @@ config ArgumentParser(int argc, const char* argv[])
 		else if (tok == "--shades") cfg.shades = stoi(argv[i+1]);
 		else if (tok == "-w") cfg.width  = stoi(argv[i+1]);
 		else if (tok == "-h") cfg.height = stoi(argv[i+1]);
+		else if (tok == "--nobg") cfg.nobg = true;
 	}
     return cfg;
 }
 
+void InterruptHandler(int signum)
+{
+	ClearScreen();
+	puts("Interrupt Recieved, Exiting...");
+	exit(signum);
+}
+
 int main(int argc, const char* argv[])
 {
+	signal(SIGINT, InterruptHandler);
 	config cfg = ArgumentParser(argc, argv);
 
 	int pos = 0;
@@ -101,7 +111,7 @@ int main(int argc, const char* argv[])
 	uint8_t buf[cfg.width*3*cfg.height];	// Save one image in buffer
 	
 	char test_cmd[500];
-	snprintf(test_cmd, 500, "ffmpeg -i %s -v quiet -vsync 1 -s %ux%u "
+	snprintf(test_cmd, 500, "ffmpeg -re -i %s -v quiet -s %ux%u "
 							"-f image2pipe -vcodec rawvideo -pix_fmt rgb24 -",
 							cfg.vid_path.c_str(), cfg.width, cfg.height);
 	
@@ -112,9 +122,12 @@ int main(int argc, const char* argv[])
 		exit(-1);
 	}
 
+	ClearScreen();
+	if (!cfg.nobg) printf("\e[40m"); // black background
+	
 	do {
 		rs = fread(buf, 1, sizeof(buf), ffpipe);
-    	//printf("\n\033[94;1;3m ++++++++ Read %lu Bytes +++++++++ \033[m\n", rs);
+		
     	for (uint y=0 ; y < cfg.height ; ++y)
     	{
     		for (uint x=0 ; x < cfg.width ; ++x)
@@ -122,20 +135,28 @@ int main(int argc, const char* argv[])
     			++pos;
     			if (!cfg.color)
     			{
-    				brightness = (buf[3*pos-2]/sf1 + buf[3*pos-1]/sf1 + buf[3*pos]/sf1) / 3;
+    				brightness = (buf[3*pos-3]/sf1 + buf[3*pos-2]/sf1 + buf[3*pos-1]/sf1) / 3;
     				printf("%c", shade_list[(int)(brightness*sf2)]);
     			}
     			else
     			{
-    				printf("\e[38;2;%u;%u;%um%c", buf[3*pos-2], buf[3*pos-1], buf[3*pos], cfg.block);
+    				//printf("\e[38;2;%u;%u;%um%c", buf[3*pos-2], buf[3*pos-1], buf[3*pos], cfg.block);
+    				printf("\e[38;2;%u;%u;%um%c", buf[3*pos], buf[3*pos+1], buf[3*pos+2], cfg.block);
     			}
     		}
-    		puts("");	// Newline
+    		if (y != cfg.height-1) puts("");	// Newline
     	}
+    	
     	pos = 0;
-    	ClearScreen();
+    	printf("\r"); // return to start of line
+    	for (uint y=1 ; y < cfg.height ; ++y)
+    	{
+    		printf("\e[A"); // go one line up
+    	}
+    	
 	} while (rs == sizeof(buf));
-    
-    printf("\n\e[96;1m ==> Closing Pipe, %s\033[m\n", strerror(pclose(ffpipe)));
+
+    ClearScreen();
+    printf("\n\e[96;1m ==> Closing Pipe, %s\e[0m\n", strerror(pclose(ffpipe)));
     return 0;
 }
