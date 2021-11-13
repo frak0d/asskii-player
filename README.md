@@ -4,8 +4,8 @@ Ascii Video Player with **True Color** support that runs in any modern Console.
 
 ---
 ## 📄 Notes :-
-1. A <s>C++20</s> C++11 Compatible Compiler is required to build asskii-player.
-2. FFmpeg should be in Path.
+1. FFmpeg should be in Path.
+2. If you are getting low fps in color mode then try using [kitty](https://github.com/kovidgoyal/kitty) terminal, it's blazing fast!
 
 ---
 ## ⚡ Installation :-
