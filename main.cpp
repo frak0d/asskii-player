@@ -123,7 +123,7 @@ int main(int argc, const char* argv[])
 	}
 
 	ClearScreen();
-	if (!cfg.nobg) printf("\e[40m"); // black background
+	if (!cfg.nobg) printf("\e[48;2;0;0;0m"); // black background
 	
 	do {
 		rs = fread(buf, 1, sizeof(buf), ffpipe);

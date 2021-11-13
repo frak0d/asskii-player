@@ -13,7 +13,7 @@ set(CLANG_DEFAULT_LINKER lld)
 # --------------COMPILER SPECIFIC---------------- #
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-	set(CMAKE_CXX_FLAGS "-O3 -Wall -flto -stdlib=libc++ -lc++ -fuse-ld=lld")
+	set(CMAKE_CXX_FLAGS "-O3 -Wall -flto -stdlib=libc++ -lc++")
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	set(CMAKE_CXX_FLAGS "-O3 -Wall -flto -s")
