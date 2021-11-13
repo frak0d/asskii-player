@@ -62,7 +62,8 @@ config ArgumentParser(int argc, const char* argv[])
 				"               (ignored in non-color mode)\n"
 				"--shades  -->  Specify the number of ascii shades (default is %u)\n"
 				"               (ignored in color mode)\n"
-				"--nobg    -->  Does not print the background black."
+				"--nobg    -->  Do not paint the background black."
+				"--noclr   -->  Preserve the last frame after playing.\n"
 				"\n"
 				"Note : Unknown Arguments are silently ignored.\n",
 				 cfg.width, cfg.height, cfg.block, cfg.shades);
