@@ -31,7 +31,8 @@ struct config
 	string vid_path;
 	uint8_t shades = 32;
 	bool color = false;
-	bool nobg = false;
+	bool bg = true;
+	bool clr = true;
 	char block = '#';
 	uint width = 80;
 	uint height = 45;
@@ -81,12 +82,13 @@ config ArgumentParser(int argc, const char* argv[])
 	for (int i=2 ; i < argc ; i++)	//argv[0] is exe name, argv[1] is video name
 	{
 		tok = argv[i];
-		if 		(tok == "--color") cfg.color = true;
+		if      (tok == "--color") cfg.color = true;
 		else if (tok == "--block") cfg.block = *argv[i+1];
 		else if (tok == "--shades") cfg.shades = stoi(argv[i+1]);
 		else if (tok == "-w") cfg.width  = stoi(argv[i+1]);
 		else if (tok == "-h") cfg.height = stoi(argv[i+1]);
-		else if (tok == "--nobg") cfg.nobg = true;
+		else if (tok == "--nobg") cfg.bg = false;
+		else if (tok == "--noclr") cfg.clr = false;
 	}
     return cfg;
 }
@@ -123,8 +125,8 @@ int main(int argc, const char* argv[])
 		exit(-1);
 	}
 
-	ClearScreen();
-	if (!cfg.nobg) printf("\e[48;2;0;0;0m"); // black background
+	/*if (cfg.clr)*/ClearScreen();
+	if (cfg.bg) printf("\e[48;2;0;0;0m"); // black background
 	
 	do {
 		rs = fread(buf, 1, sizeof(buf), ffpipe);
@@ -157,7 +159,8 @@ int main(int argc, const char* argv[])
     	
 	} while (rs == sizeof(buf));
 
-    ClearScreen();
+    if (cfg.clr) ClearScreen(); // clear screen
+    else printf("\e[0m"); // reset colors
     printf("\n\e[96;1m ==> Closing Pipe, %s\e[0m\n", strerror(pclose(ffpipe)));
     return 0;
 }
