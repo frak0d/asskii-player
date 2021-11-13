@@ -1,22 +1,30 @@
+---
 # asskii-player
+Ascii Video Player with **True Color** support that runs in any modern Console.
 
-Ascii Video Player that runs in any modern Console. [W.I.P]
-
-## Usage :-
-1. Build the asskii-player with a <s>C++20</s> C++11 Compatible Compiler.
+---
+## 📄 Notes :-
+1. A <s>C++20</s> C++11 Compatible Compiler is required to build asskii-player.
 2. FFmpeg should be in Path.
-3. Run asskii-player from commandline.
 
-## Build Commands :-
-1. `git clone https://github.com/Tanishq-Banyal/asskii-player.git`
-2. `cd asskii-player`
-3. `g++ -O3 -s -march=native -mtune=native -flto -static --std=c++11 -Wall main.cpp -o asskii-player`
-
-## CLI Help :-
+---
+## ⚡ Installation :-
 ```
-~$ ./asskii-player
+git clone https://github.com/Tanishq-Banyal/asskii-player
+cd asskii-player && cmake . && make -j 4
+sudo cp asskii-player /usr/bin/asskii-player
+cd .. && rm -r asskii-player
+```
 
-Usage :-
+---
+## 🗑️ Uninstallation :-
+```
+sudo rm /usr/bin/asskii-player
+```
+
+---
+## 💡 Usage :-
+```
 ./asski-player [video path] <optional arguments>
 
 -w & -h   -->  Set Frame Width & Height (defaults are -w 80 -h 45)
@@ -25,11 +33,14 @@ Usage :-
                (ignored in non-color mode)
 --shades  -->  Specify the number of ascii shades (default is 32)
                (ignored in color mode)
+--nobg    -->  Does not print the background black.
+--noclr   -->  Preserve the last frame after playing.
 
 Note : Unknown Arguments are silently ignored.
 ```
 
-## Working Idea :-
+---
+## 📃 Roadmap :-
 (✔️=Done, 🕐=Pending)
 1. Extract video frames using ffmpeg. ✔️
 2. Pipe the frames into the program. ✔️
@@ -37,3 +48,5 @@ Note : Unknown Arguments are silently ignored.
 4. Audio Support with SDL2_Mixer maybe ? 🕐
 5. Playback control using keyboard. 🕐
 6. Include a rickroll for testing. 🕐 (it was the original aim for this app)
+
+---
