@@ -47,6 +47,5 @@ Note : Unknown Arguments are silently ignored.
 3. Display the frames as ascii art on console ✔️ with optional --color. ✔️
 4. Audio Support with SDL2_Mixer maybe ? 🕐
 5. Playback control using keyboard. 🕐
-6. Include a rickroll for testing. 🕐 (it was the original aim for this app)
-
+6. Unicode Mode using **Block Characters** for higher resolution. 🕐
 ---
