@@ -48,4 +48,12 @@ Note : Unknown Arguments are silently ignored.
 4. Audio Support with SDL2_Mixer maybe ? 🕐
 5. Playback control using keyboard. 🕐
 6. Unicode Mode using **Block Characters** for higher resolution. 🕐
+
+---
+### ⭐ Stargazers :-
+[![Stargazers for @Tanishq-Banyal/asskii-player](https://reporoster.com/stars/Tanishq-Banyal/asskii-player)](https://github.com/Tanishq-Banyal/asskii-player/stargazers)
+
+### 🍴 Forkers :-
+[![Forkers for @Tanishq-Banyal/asskii-player](https://reporoster.com/forks/Tanishq-Banyal/asskii-player)](https://github.com/Tanishq-Banyal/asskii-player/network/members)
+
 ---
