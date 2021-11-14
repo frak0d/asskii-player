@@ -9,7 +9,7 @@ Ascii Video Player with **True Color** support that runs in any modern Console.
 
 ---
 ## ⚡ Installation :-
-```
+```sh
 git clone https://github.com/Tanishq-Banyal/asskii-player
 cd asskii-player && cmake . && make -j 4
 sudo cp asskii-player /usr/bin/asskii-player
@@ -18,7 +18,7 @@ cd .. && rm -r asskii-player
 
 ---
 ## 🗑️ Uninstallation :-
-```
+```sh
 sudo rm /usr/bin/asskii-player
 ```
 
