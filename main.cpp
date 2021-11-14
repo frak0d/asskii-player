@@ -23,7 +23,7 @@ inline void ClearScreen()
 		system("cls");
 	#endif
 */
-    printf("\e[m\e[2J\e[H");
+    printf("\e[0m\e[2J\e[H");
 }
 
 struct config
@@ -113,8 +113,8 @@ int main(int argc, const char* argv[])
 	
 	uint8_t buf[cfg.width*3*cfg.height];	// Save one image in buffer
 	
-	char test_cmd[500];
-	snprintf(test_cmd, 500, "ffmpeg -re -i %s -v quiet -s %ux%u "
+	char test_cmd[512];
+	snprintf(test_cmd, 512, "ffmpeg -re -i %s -v quiet -s %ux%u "
 							"-f image2pipe -vcodec rawvideo -pix_fmt rgb24 -",
 							cfg.vid_path.c_str(), cfg.width, cfg.height);
 	
@@ -159,8 +159,23 @@ int main(int argc, const char* argv[])
     	
 	} while (rs == sizeof(buf));
 
-    if (cfg.clr) ClearScreen(); // clear screen
-    else printf("\e[0m"); // reset colors
-    printf("\n\e[96;1m ==> Closing Pipe, %s\e[0m\n", strerror(pclose(ffpipe)));
-    return 0;
+    if (cfg.clr) ClearScreen(); // reset everything
+    else printf("\e[0m"); // reset colors only
+    
+    int err = pclose(ffpipe); // closinv pipe
+
+    switch (err)
+    {
+    case 0: // no errors anywhere
+    	printf("\n");
+    	return 0;
+    
+    case -1: // error closing pipe
+    	printf("\n\e[91;1m ==> Error %d while Closing Pipe, %s\e[0m\n", err, strerror(errno));
+    	return -1;
+    
+    default: // error in ffmpeg
+    	printf("\n\e[91;1m ==> Closing Pipe, FFmpeg Returned Code %d\e[0m\n", err);
+    	return -2;
+	}
 }
