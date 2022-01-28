@@ -14,16 +14,7 @@ const uint arg_count = 6;
 
 inline void ClearScreen()
 {
-/*
-	#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
-		system("clear");
-	#endif
-
-	#if defined(_WIN32) || defined(_WIN64)
-		system("cls");
-	#endif
-*/
-    printf("\e[0m\e[2J\e[H");
+    printf("\x1b[0m\x1b[3J\x1b[H");
 }
 
 struct config
@@ -63,7 +54,7 @@ config ArgumentParser(int argc, const char* argv[])
 				"               (ignored in non-color mode)\n"
 				"--shades  -->  Specify the number of ascii shades (default is %u)\n"
 				"               (ignored in color mode)\n"
-				"--nobg    -->  Do not paint the background black."
+				"--nobg    -->  Do not paint the background black.\n"
 				"--noclr   -->  Preserve the last frame after playing.\n"
 				"\n"
 				"Note : Unknown Arguments are silently ignored.\n",
@@ -72,7 +63,7 @@ config ArgumentParser(int argc, const char* argv[])
 	}
 	else if (isInArgList(argv[1]))
 	{
-		puts("\e[91;1;3m==> Error : No Video File Specified !\e[0m");
+		puts("\x1b[91;1;3m==> Error : No Video File Specified !\x1b[0m");
 		exit(-1);
 	}
 	
@@ -82,13 +73,13 @@ config ArgumentParser(int argc, const char* argv[])
 	for (int i=2 ; i < argc ; i++)	//argv[0] is exe name, argv[1] is video name
 	{
 		tok = argv[i];
-		if      (tok == "--color") cfg.color = true;
-		else if (tok == "--block") cfg.block = *argv[i+1];
+		if      (tok == "--color")  cfg.color  = true;
+		else if (tok == "--block")  cfg.block  = *argv[i+1];
 		else if (tok == "--shades") cfg.shades = stoi(argv[i+1]);
-		else if (tok == "-w") cfg.width  = stoi(argv[i+1]);
-		else if (tok == "-h") cfg.height = stoi(argv[i+1]);
-		else if (tok == "--nobg") cfg.bg = false;
-		else if (tok == "--noclr") cfg.clr = false;
+		else if (tok == "-w")       cfg.width  = stoi(argv[i+1]);
+		else if (tok == "-h")       cfg.height = stoi(argv[i+1]);
+		else if (tok == "--nobg")   cfg.bg     = false;
+		else if (tok == "--noclr")  cfg.clr    = false;
 	}
     return cfg;
 }
@@ -113,20 +104,20 @@ int main(int argc, const char* argv[])
 	
 	uint8_t buf[cfg.width*3*cfg.height];	// Save one image in buffer
 	
-	char test_cmd[512];
-	snprintf(test_cmd, 512, "ffmpeg -re -i %s -v quiet -s %ux%u "
+	char test_cmd[1024];
+	snprintf(test_cmd, 1024,"ffmpeg -re -i %s -v quiet -s %ux%u "
 							"-f image2pipe -vcodec rawvideo -pix_fmt rgb24 -",
 							cfg.vid_path.c_str(), cfg.width, cfg.height);
 	
 	FILE* ffpipe = popen(test_cmd, "r");
 	if (!ffpipe)
 	{
-		printf("\e[91;1;3m==> Unable to Open Pipe, error %d : %s\033[m\n", errno, strerror(errno));
+		printf("\x1b[91;1;3m==> Unable to Open Pipe, error %d : %s\x1b[0m\n", errno, strerror(errno));
 		exit(-1);
 	}
 
-	/*if (cfg.clr)*/ClearScreen();
-	if (cfg.bg) printf("\e[48;2;0;0;0m"); // black background
+	ClearScreen();
+	if (cfg.bg) printf("\x1b[48;2;0;0;0m"); // black background
 	
 	do {
 		rs = fread(buf, 1, sizeof(buf), ffpipe);
@@ -135,34 +126,29 @@ int main(int argc, const char* argv[])
     	{
     		for (uint x=0 ; x < cfg.width ; ++x)
     		{
-    			++pos;
-    			if (!cfg.color)
+    			if (cfg.color)
     			{
-    				brightness = (buf[3*pos-3]/sf1 + buf[3*pos-2]/sf1 + buf[3*pos-1]/sf1) / 3;
+    				printf("\x1b[38;2;%u;%u;%um%c", buf[3*pos], buf[3*pos+1], buf[3*pos+2], cfg.block);
+                }
+                else
+                {
+    				brightness = (buf[3*pos]/sf1 + buf[3*pos+1]/sf1 + buf[3*pos+2]/sf1) / 3;
     				printf("%c", shade_list[(int)(brightness*sf2)]);
     			}
-    			else
-    			{
-    				//printf("\e[38;2;%u;%u;%um%c", buf[3*pos-2], buf[3*pos-1], buf[3*pos], cfg.block);
-    				printf("\e[38;2;%u;%u;%um%c", buf[3*pos], buf[3*pos+1], buf[3*pos+2], cfg.block);
-    			}
+    			++pos;
     		}
     		if (y != cfg.height-1) puts("");	// Newline
     	}
     	
     	pos = 0;
-    	printf("\r"); // return to start of line
-    	for (uint y=1 ; y < cfg.height ; ++y)
-    	{
-    		printf("\e[A"); // go one line up
-    	}
+    	printf("\x1b[H"); // go to top left
     	
 	} while (rs == sizeof(buf));
 
     if (cfg.clr) ClearScreen(); // reset everything
-    else printf("\e[0m"); // reset colors only
+    else printf("\x1b[0m"); // reset colors only
     
-    int err = pclose(ffpipe); // closinv pipe
+    int err = pclose(ffpipe); // closing pipe
 
     switch (err)
     {
@@ -171,11 +157,11 @@ int main(int argc, const char* argv[])
     	return 0;
     
     case -1: // error closing pipe
-    	printf("\n\e[91;1m ==> Error %d while Closing Pipe, %s\e[0m\n", err, strerror(errno));
+    	printf("\n\x1b[91;1m ==> Error %d while Closing Pipe, %s\x1b[0m\n", err, strerror(errno));
     	return -1;
     
     default: // error in ffmpeg
-    	printf("\n\e[91;1m ==> Closing Pipe, FFmpeg Returned Code %d\e[0m\n", err);
+    	printf("\n\x1b[91;1m ==> Closing Pipe, FFmpeg Returned Code %d\x1b[0m\n", err);
     	return -2;
 	}
 }
